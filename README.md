@@ -84,6 +84,7 @@ Jika user memasukkan opsi selain a/b/c/d/e, program menampilkan pesan error bese
 ```
 
 ### Output
+![Output Soal 1](assets/output1.png)
 
 ## SOAL 2
 ### Deskripsi Soal
@@ -147,3 +148,4 @@ lon_pusat=$(awk "BEGIN {printf \"%.6f\", ($lon1 + $lon2) / 2}")
 - `printf "%.6f"` → format hasil dengan 6 angka desimal
 
 ### Output
+![Output Soal 2](assets/output2.png)
