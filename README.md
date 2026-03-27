@@ -85,4 +85,65 @@ Jika user memasukkan opsi selain a/b/c/d/e, program menampilkan pesan error bese
 
 ### Output
 
+## SOAL 2
+### Deskripsi Soal
+Membantu Mas Amba menemukan koordinat pusaka tersembunyi di Gunung Kawi menggunakan shell script dan parsing JSON.
 
+### Pengerjaan
+**1. Install `gdown` dan download PDF**
+```bash
+python3 -m venv myenv
+source myenv/bin/activate
+pip install gdown
+mkdir -p ekspedisi
+gdown "https://drive.google.com/uc?id=..." -O ekspedisi/peta-ekspedisi-amba.pdf
+```
+- `python3 -m venv myenv` → membuat virtual environment Python
+- `source myenv/bin/activate` → mengaktifkan virtual environment
+- `pip install gdown` → menginstall tool download Google Drive
+- `gdown` → mendownload file dari Google Drive ke folder `ekspedisi/`
+
+**2. Membaca isi PDF**
+```bash
+cat ekspedisi/peta-ekspedisi-amba.pdf
+```
+Perintah `cat` (concatenate) digunakan untuk membedah isi file PDF 
+dan mencari tautan tersembunyi di dalamnya.
+
+**3. Clone repository**
+```bash
+git clone  ekspedisi/peta-gunung-kawi
+```
+- `git clone` → mengunduh seluruh isi repository dari URL yang ditemukan
+- Hasilnya tersimpan di folder `ekspedisi/peta-gunung-kawi/`
+
+**4. `parsekoordinat.sh`**
+```bash
+ids=$(grep -o '"id": *"node_[0-9]*"' "$INPUT" | sed 's/"id": *"\(.*\)"/\1/')
+site_names=$(grep -o '"site_name": *"[^"]*"' "$INPUT" | sed 's/"site_name": *"\(.*\)"/\1/')
+latitudes=$(grep -o '"latitude": *-\?[0-9.]*' "$INPUT" | sed 's/"latitude": *\(.*\)/\1/')
+longitudes=$(grep -o '"longitude": *-\?[0-9.]*' "$INPUT" | sed 's/"longitude": *\(.*\)/\1/')
+```
+- `grep -o` → mengekstrak teks yang cocok dengan pattern saja
+- `sed 's/.../.../'` → memformat hasil grep, mengambil nilai di dalam tanda kutip
+- `-\?[0-9.]*` → regex untuk angka desimal yang bisa negatif (koordinat selatan)
+- Keempat variabel kemudian digabungkan per baris dan disimpan ke `titik-penting.txt`
+
+**5. `nemupusaka.sh`**
+```bash
+lat1=$(awk -F',' 'NR==1 {print $3}' "$INPUT")
+lon1=$(awk -F',' 'NR==1 {print $4}' "$INPUT")
+lat2=$(awk -F',' 'NR==3 {print $3}' "$INPUT")
+lon2=$(awk -F',' 'NR==3 {print $4}' "$INPUT")
+
+lat_pusat=$(awk "BEGIN {printf \"%.6f\", ($lat1 + $lat2) / 2}")
+lon_pusat=$(awk "BEGIN {printf \"%.6f\", ($lon1 + $lon2) / 2}")
+```
+- `awk -F','` → membaca `titik-penting.txt` dengan pemisah koma
+- `NR==1` dan `NR==3` → mengambil koordinat node_001 dan node_003 (diagonal)
+- Titik pusat dihitung dengan rumus titik simetri diagonal:
+  - `lat_pusat = (lat1 + lat2) / 2`
+  - `lon_pusat = (lon1 + lon2) / 2`
+- `printf "%.6f"` → format hasil dengan 6 angka desimal
+
+### Output
